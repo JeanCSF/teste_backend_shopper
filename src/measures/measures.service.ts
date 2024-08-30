@@ -194,7 +194,7 @@ export class MeasuresService {
 
   async findMeasuresByCustomer(
     listMeasuresDto: ListMeasuresDto,
-  ): Promise<MeasureEntity[]> {
+  ): Promise<{}> {
     const { customerCode, measure_type } = listMeasuresDto;
     const whereConditions: any = {
       customer_code: customerCode,
@@ -214,7 +214,19 @@ export class MeasuresService {
         message: 'measures for this customer does not exist',
       });
     }
+    const formattedMeasures = this.formatMeasures(measures);
+    return formattedMeasures;
+  }
 
-    return measures;
+  private formatMeasures(measures: MeasureEntity[]) {
+    return measures.map((measure) => {
+      return {
+        measure_uuid: measure.measure_uuid,
+        measure_datetime: measure.measure_datetime,
+        measure_type: measure.measure_type,
+        has_confirmed: measure.has_confirmed,
+        image_url: measure.image_url,
+      };
+    });
   }
 }

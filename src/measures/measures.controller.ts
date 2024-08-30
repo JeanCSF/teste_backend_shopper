@@ -54,19 +54,9 @@ export class MeasuresController {
       customerCode,
     });
 
-    const formatedMeasures = measures.map((measure) => {
-      return {
-        measure_uuid: measure.measure_uuid,
-        measure_datetime: measure.measure_datetime,
-        measure_type: measure.measure_type,
-        has_confirmed: measure.has_confirmed,
-        image_url: measure.image_url,
-      };
-    });
-
     return response.status(200).json({
       customer_code: customerCode,
-      measures: formatedMeasures,
+      measures: measures,
     });
   }
 }

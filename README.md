@@ -1,85 +1,170 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Instruções
+### Instalação
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
+1. Clone o repositório:
 ```bash
-$ npm install
+git clone https://github.com/JeanCSF/teste_backend_shopper.git
 ```
 
-## Compile and run the project
-
+2. Utilize o docker para instalar os pacotes e subir o projeto:
 ```bash
-# development
-$ npm run start
+docker-compose up -d
+```
+Feito isto basta testar os endpoints, a API estará disponível na porta 3000
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+3. Esta API conta com alguns testes unitários nos controllers. Para executá-los utilize o seguinte comando: 
+```bash
+npm run test
 ```
 
-## Run tests
+# Endpoints
 
-```bash
-# unit tests
-$ npm run test
+#### POST /upload
+Responsável por receber uma imagem em base 64, consultar o Gemini e retornar a medida lida pela API
+#### Requisição
 
-# e2e tests
-$ npm run test:e2e
+Enviar no corpo da requisição os seguintes dados no formato JSON:
+- `image` (string): Imagem em base 64.
+- `customer_code` (string): Código do cliente.
+- `measure_datetime` (string): Data e hora da medida (ISO 8601).
+- `measure_type` (string): Tipo de medida('WATER' ou 'GAS').
 
-# test coverage
-$ npm run test:cov
+
+##### Exemplo de Corpo da Requisição:
+```json
+{
+  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
+  "customer_code": "123456789",
+  "measure_datetime": "2022-01-01T00:00:00.000Z",
+  "measure_type": "WATER"
+}
 ```
 
-## Resources
+## Códigos de status e descricão das respostas
 
-Check out a few resources that may come in handy when working with NestJS:
+### 200 - Operação realizada com sucesso
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```json
+{
+  "image_url": "/images/customer-customerCode_month-year_type.png",
+  "measure_value": 123,
+  "measure_uuid": "a0d5cf04-04e0-4833-b270-fcb210db27ec"
+}
+```
 
-## Support
+### 400 - Os dados fornecidos no corpo da requisição são inválidos
+```json
+{
+  "error_code": "INVALID_DATA",
+  "error_description": "<descrição do erro>"
+}
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### 409 - Já existe uma leitura para este tipo no mês atual
+```json
+{
+  "error_code": "DOUBLE_REPORT",
+  "error_description": "Leitura do mês já realizada"
+}
+```
 
-## Stay in touch
+#### PATCH /confirm
+Responsável por confirmar ou corrigir o valor lido pelo LLM
+#### Requisição
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Enviar no corpo da requisição os seguintes dados no formato JSON:
+- `measure_uuid` (string): Código da leitura.
+- `confirmed_value` (integer): Valor da leitura confirmado.
 
-## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+##### Exemplo de Corpo da Requisição:
+```json
+{
+"measure_uuid": "a0d5cf04-04e0-4833-b270-fcb210db27ec",
+"confirmed_value": 404188
+}
+```
+
+## Códigos de status e descricão das respostas
+
+### 200 - Operação realizada com sucesso
+
+```json
+{
+"success": true
+}
+```
+
+### 400 - Os dados fornecidos no corpo da requisição são inválidos
+```json
+{
+  "error_code": "INVALID_DATA",
+  "error_description": "<descrição do erro>"
+}
+```
+
+### 404 - Leitura não encontrada
+```json
+{
+  "error_code": "MEASURE_NOT_FOUND",
+  "error_description": "<descrição do erro>"
+}
+```
+
+### 409 - Leitura já confirmada 
+```json
+{
+  "error_code": "CONFIRMATION_DUPLICATE",
+  "error_description": "Leitura do mês já confirmada"
+}
+```
+
+#### GET /:customerCode/list
+Responsável por listar as medidas realizadas por um determinado cliente
+#### Requisição
+
+Enviar na URL da requisição os seguintes dados:
+- `customerCode` (string): Código do cliente.
+- `measure_type` (string): Tipo de medida('WATER' ou 'GAS') *opcional.
+
+## Códigos de status e descricão das respostas
+
+### 200 - Operação realizada com sucesso
+
+```json
+{
+  "customer_code": "123456789",
+  "measures": [
+    {
+      "measure_uuid": "a0d5cf04-04e0-4833-b270-fcb210db27ec",
+      "measure_datetime": "2022-01-01T00:00:00.000Z",
+      "measure_type": "WATER",
+      "has_confirmed": true,
+      "image_url": "/images/customer-customerCode_month-year_type.png"
+    },
+    {
+      "measure_uuid": "a0d5cf04-04e0-4444-b270-fcb211db27bc",
+      "measure_datetime": "2022-01-01T00:00:00.000Z",
+      "measure_type": "GAS",
+      "has_confirmed": false,
+      "image_url": "/images/customer-customerCode_month-year_type.png"
+    },
+  ]
+}
+```
+
+### 400 - Parâmetro measure type diferente de WATER ou GAS
+```json
+{
+  "error_code": "INVALID_DATA",
+  "error_description": "Tipo de medição não permitida"
+}
+```
+
+### 404 - Leitura não encontrada
+```json
+{
+  "error_code": "MEASURES_NOT_FOUND",
+  "error_description": "Nenhuma leitura encontrada"
+}
+```

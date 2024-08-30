@@ -96,6 +96,7 @@ describe('MeasuresController', () => {
       measure_uuid: 'some-uuid',
       confirmed_value: 123,
     };
+    
     it('should confirm a measure and return the response', async () => {
       await measuresController.confirmMeasure(mockResponse, confirmMeasureDTO);
 
@@ -118,36 +119,55 @@ describe('MeasuresController', () => {
   });
 
   describe('findMeasuresByCustomer', () => {
-    it('should find measures by customer and return the response', async () => {
-      const listMeasuresDto: ListMeasuresDto = {
-        customerCode: 'customer123',
+    const customerCode = 'customer123';
+    const listMeasuresDto = {
+      measure_type: 'WATER',
+    };
+
+    const mockMeasures = [
+      {
+        measure_uuid: 'some-uuid',
+        measure_datetime: new Date().toISOString(),
         measure_type: 'WATER',
-      };
+        has_confirmed: true,
+        image_url: 'some-image-url',
+      },
+    ];
+
+    it('should find measures by customer and return the response', async () => {
+      jest
+        .spyOn(measuresService, 'findMeasuresByCustomer')
+        .mockResolvedValue(mockMeasures);
 
       await measuresController.findMeasuresByCustomer(
         mockResponse,
-        listMeasuresDto.customerCode,
+        customerCode,
         listMeasuresDto,
       );
 
       expect(measuresService.findMeasuresByCustomer).toHaveBeenCalledWith({
         ...listMeasuresDto,
-        customerCode: 'customer123',
+        customerCode: customerCode,
       });
-      expect(measuresService.findMeasuresByCustomer).toHaveBeenCalledTimes(1);
       expect(mockResponse.status).toHaveBeenCalledWith(200);
       expect(mockResponse.json).toHaveBeenCalledWith({
-        customer_code: 'customer123',
-        measures: [
-          {
-            measure_uuid: 'some-uuid',
-            measure_datetime: new Date().toISOString(),
-            measure_type: 'WATER',
-            has_confirmed: true,
-            image_url: 'some-image-url',
-          },
-        ],
+        customer_code: customerCode,
+        measures: mockMeasures,
       });
+    });
+
+    it('should throw an exception', async () => {
+      jest
+        .spyOn(measuresService, 'findMeasuresByCustomer')
+        .mockRejectedValueOnce(new BadRequestException());
+
+      await expect(
+        measuresController.findMeasuresByCustomer(
+          mockResponse,
+          customerCode,
+          listMeasuresDto,
+        ),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });
