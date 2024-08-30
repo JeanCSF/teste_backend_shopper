@@ -1,0 +1,29 @@
+services:
+  app:
+    image: node:20
+    container_name: shopper-api
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - '3000:3000'
+    command: bash -c "npm install && npm start"
+    depends_on:
+      - postgres
+  postgres:
+    image: 'postgres'
+    container_name: shopper-api-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+      - ./create-db.sql:/docker-entrypoint-initdb.d/create-db.sql
