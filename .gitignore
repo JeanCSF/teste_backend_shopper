@@ -3,7 +3,11 @@
 /node_modules
 /build
 /postgres_data
-uploads/*
+*.png
+*.jpeg
+*.webp
+*.heic
+*.heif
 
 # Logs
 logs
